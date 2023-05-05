@@ -1,0 +1,50 @@
+local Players = game:GetService("Players")
+local module = {}
+
+function module:CreateList(Types,Folder,Part,callback)
+	local list = {}
+	
+	if Types == "GetChars" then
+		for v,i in pairs(Folder:GetChildren()) do
+			if i:FindFirstChild(Part) then
+				table.insert(list,i)
+			end
+		end
+		Folder.ChildAdded:Connect(function(chld)
+			if chld:FindFirstChild(Part) then
+				table.insert(list,chld)
+			end
+		end)
+		
+		Folder.ChildRemoved:Connect(function(chld)
+			if chld:FindFirstChild(Part) then
+				for v,i in pairs(list) do
+					if i == chld then
+						table.remove(list,v)
+					end
+				end
+			end
+		end)
+	elseif Types == "PlayerGet" then
+		for v,i in pairs(Players:GetChildren()) do
+			table.insert(list,i.Character)
+		end
+		Players.PlayerAdded:Connect(function(plr)
+			table.insert(list,plr.Character)
+		end)
+		Players.PlayerRemoving:Connect(function(plr)
+			for v,i in pairs(list) do
+				if i == plr.Character then
+					table.remove(list,v)
+				end
+			end
+		end)
+	end
+	
+	local minifunc = {}
+	function minifunc:GetList(callback)
+		callback(list)
+	end
+end
+
+return module
