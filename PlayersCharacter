@@ -45,6 +45,8 @@ function module:CreateList(Types,Folder,Part,callback)
 	function minifunc:GetList()
 		return list
 	end
+	
+	return minifunc
 end
 
 return module
