@@ -42,8 +42,8 @@ function module:CreateList(Types,Folder,Part,callback)
 	end
 	
 	local minifunc = {}
-	function minifunc:GetList(callback)
-		callback(list)
+	function minifunc:GetList()
+		return list
 	end
 end
 
