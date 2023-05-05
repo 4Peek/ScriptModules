@@ -8,11 +8,13 @@ function module:CreateList(Types,Folder,Part,callback)
 		for v,i in pairs(Folder:GetChildren()) do
 			if i:FindFirstChild(Part) then
 				table.insert(list,i)
+				callback(list)
 			end
 		end
 		Folder.ChildAdded:Connect(function(chld)
 			if chld:FindFirstChild(Part) then
 				table.insert(list,chld)
+				callback(list)
 			end
 		end)
 		
@@ -21,6 +23,7 @@ function module:CreateList(Types,Folder,Part,callback)
 				for v,i in pairs(list) do
 					if i == chld then
 						table.remove(list,v)
+						callback(list)
 					end
 				end
 			end
@@ -28,14 +31,17 @@ function module:CreateList(Types,Folder,Part,callback)
 	elseif Types == "PlayerGet" then
 		for v,i in pairs(Players:GetChildren()) do
 			table.insert(list,i.Character)
+			callback(list)
 		end
 		Players.PlayerAdded:Connect(function(plr)
 			table.insert(list,plr.Character)
+			callback(list)
 		end)
 		Players.PlayerRemoving:Connect(function(plr)
 			for v,i in pairs(list) do
 				if i == plr.Character then
 					table.remove(list,v)
+					callback(list)
 				end
 			end
 		end)
