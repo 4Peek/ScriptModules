@@ -1,6 +1,8 @@
 local lib = {}
 local ts = game:GetService("TweenService")
+
 local framelist = {}
+
 function rainbow(gradient)
 	local ti = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
 	local offset = {Offset = Vector2.new(1, 0)}
@@ -348,7 +350,15 @@ function lib:CreateScrolling(Settings)
 			end
 		end
 	end
+	
+	if Settings.Modules.UiList then
+		local list = Instance.new("UIListLayout",Frame)
+		list.Padding = Settings.Modules.UiList.Padding
+		list.FillDirection = Settings.Modules.UiList.FillDerection
+	end
+	
 	return Frame
+	
 end
 
 return lib
