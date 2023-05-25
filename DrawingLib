@@ -1,0 +1,354 @@
+local lib = {}
+local ts = game:GetService("TweenService")
+local framelist = {}
+function rainbow(gradient)
+	local ti = TweenInfo.new(1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+	local offset = {Offset = Vector2.new(1, 0)}
+	local create = ts:Create(gradient, ti, offset)
+	local startingPos = Vector2.new(-1, 0)
+	local list = {} 
+	local s, kpt = ColorSequence.new, ColorSequenceKeypoint.new
+	local counter = 0
+	local status = "down" 
+	gradient.Offset = startingPos
+	local function rainbowColors()
+		local sat, val = 255, 255 
+		for i = 1, 15 do 
+			local hue = i * 17 
+			table.insert(list, Color3.fromHSV(hue / 255, sat / 255, val / 255))
+		end
+	end
+	rainbowColors()
+	gradient.Color = s({
+		kpt(0, list[#list]),
+		kpt(0.5, list[#list - 1]),
+		kpt(1, list[#list - 2])
+	})
+	counter = #list
+	local function animate()
+		create:Play()
+		create.Completed:Wait() 
+		gradient.Offset = startingPos 
+		gradient.Rotation = 180
+		if counter == #list - 1 and status == "down" then
+			gradient.Color = s({
+				kpt(0, gradient.Color.Keypoints[1].Value),
+				kpt(0.5, list[#list]), 
+				kpt(1, list[1]) 
+			})
+			counter = 1
+			status = "up" 
+		elseif counter == #list and status == "down" then 
+			gradient.Color = s({
+				kpt(0, gradient.Color.Keypoints[1].Value),
+				kpt(0.5, list[1]),
+				kpt(1, list[2])
+			})
+			counter = 2
+			status = "up"
+		elseif counter <= #list - 2 and status == "down" then 
+			gradient.Color = s({
+				kpt(0, gradient.Color.Keypoints[1].Value),
+				kpt(0.5, list[counter + 1]), 
+				kpt(1, list[counter + 2])
+			})
+			counter = counter + 2
+			status = "up"
+		end
+		create:Play()
+		create.Completed:Wait()
+		gradient.Offset = startingPos
+		gradient.Rotation = 0 
+		if counter == #list - 1 and status == "up" then
+			gradient.Color = s({ 
+
+				kpt(0, list[1]), 
+				kpt(0.5, list[#list]), 
+				kpt(1, gradient.Color.Keypoints[3].Value)
+			})
+			counter = 1
+			status = "down"
+		elseif counter == #list and status == "up" then
+			gradient.Color = s({
+				kpt(0, list[2]),
+				kpt(0.5, list[1]), 
+				kpt(1, gradient.Color.Keypoints[3].Value)
+			})
+			counter = 2
+			status = "down"
+		elseif counter <= #list - 2 and status == "up" then
+			gradient.Color = s({
+				kpt(0, list[counter + 2]), 
+				kpt(0.5, list[counter + 1]), 
+				kpt(1, gradient.Color.Keypoints[3].Value) 	
+			})
+			counter = counter + 2
+			status = "down"
+		end
+		if gradient.Animation.Value == "Rainbow" then
+			animate()
+		else
+			return
+		end
+	end
+	if gradient.Animation.Value == "Rainbow" then
+		animate()
+	else
+		return
+	end
+end
+
+function lib:CreateScreenUi(Name)
+	local screenui = Instance.new("ScreenGui",game.Players.LocalPlayer.PlayerGui)
+	screenui.Name = Name
+	return screenui
+end
+
+function lib:CreateFrame(Settings)
+	local Frame = Instance.new("Frame",Settings.Properties.Parent)
+	Frame.Size = Settings.Properties.Size
+	Frame.Position = Settings.Properties.Position
+	Frame.BackgroundColor3 = Settings.Properties.BackGroundeColor
+	Frame.BackgroundTransparency = Settings.Properties.BackGroundeTransparency
+	
+	if Settings.Modules.Corner then
+		local Corner = Instance.new("UICorner",Frame)
+		Corner.CornerRadius = Settings.Modules.Corner.Radius
+	end
+	
+	if Settings.Modules.Gradient then
+		local Gradient = Instance.new("UIGradient",Frame)
+		Gradient.Color = Settings.Modules.Gradient.Color
+		
+		local Animation = Instance.new("StringValue",Gradient)
+		Animation.Name = "Animation"
+		
+		if Settings.Modules.Gradient.Animation then
+			if Settings.Modules.Gradient.Animation.Rainbow then
+				Animation.Changed:Connect(function(value)
+					if value == "Rainbow" then
+						rainbow(Gradient)
+					end
+				end)
+				Animation.Value = "Rainbow"
+			end
+		end
+	end
+	return Frame
+end
+function lib:CreateTextButton(Settings)
+	local Frame = Instance.new("TextButton",Settings.Properties.Parent)
+	Frame.Size = Settings.Properties.Size
+	Frame.Position = Settings.Properties.Position
+	Frame.BackgroundColor3 = Settings.Properties.BackGroundeColor
+	Frame.BackgroundTransparency = Settings.Properties.BackGroundeTransparency
+	
+	Frame.Text = Settings.Text.Text
+	Frame.TextColor3 = Settings.Text.TextColor
+	Frame.TextScaled = Settings.Text.TextScaled
+	Frame.RichText = Settings.Text.RichText
+	Frame.Font = Settings.Text.Fonts
+	Frame.TextTransparency = Settings.Text.TextTransparency
+
+	if Settings.Modules.Corner then
+		local Corner = Instance.new("UICorner",Frame)
+		Corner.CornerRadius = Settings.Modules.Corner.Radius
+	end
+	
+	if Settings.Modules.TextSizeConst then
+		local tsc = Instance.new("UITextSizeConstraint",Frame)
+		tsc.MinTextSize = Settings.Modules.TextSizeConst.MinSize
+		tsc.MaxTextSize = Settings.Modules.TextSizeConst.MaxSize
+	end
+
+	if Settings.Modules.Gradient then
+		local Gradient = Instance.new("UIGradient",Frame)
+		Gradient.Color = Settings.Modules.Gradient.Color
+
+		local Animation = Instance.new("StringValue",Gradient)
+		Animation.Name = "Animation"
+
+		if Settings.Modules.Gradient.Animation then
+			if Settings.Modules.Gradient.Animation.Rainbow then
+				Animation.Changed:Connect(function(value)
+					if value == "Rainbow" then
+						rainbow(Gradient)
+					end
+				end)
+				Animation.Value = "Rainbow"
+			end
+		end
+	end
+	return Frame
+end
+function lib:CreateImageButton(Settings)
+	local Frame = Instance.new("ImageButton",Settings.Properties.Parent)
+	Frame.Size = Settings.Properties.Size
+	Frame.Position = Settings.Properties.Position
+	Frame.BackgroundColor3 = Settings.Properties.BackGroundeColor
+	Frame.BackgroundTransparency = Settings.Properties.BackGroundeTransparency
+
+	Frame.Image = Settings.Image.Image
+	Frame.ImageColor3 = Settings.Image.ImageColor
+	Frame.ImageTransparency = Settings.Image.ImageTransparency
+
+	if Settings.Modules.Corner then
+		local Corner = Instance.new("UICorner",Frame)
+		Corner.CornerRadius = Settings.Modules.Corner.Radius
+	end
+
+	if Settings.Modules.Gradient then
+		local Gradient = Instance.new("UIGradient",Frame)
+		Gradient.Color = Settings.Modules.Gradient.Color
+
+		local Animation = Instance.new("StringValue",Gradient)
+		Animation.Name = "Animation"
+
+		if Settings.Modules.Gradient.Animation then
+			if Settings.Modules.Gradient.Animation.Rainbow then
+				Animation.Changed:Connect(function(value)
+					if value == "Rainbow" then
+						rainbow(Gradient)
+					end
+				end)
+				Animation.Value = "Rainbow"
+			end
+		end
+	end
+	return Frame
+end
+function lib:CreateText(Settings)
+	local Frame = Instance.new("TextLabel",Settings.Properties.Parent)
+	Frame.Size = Settings.Properties.Size
+	Frame.Position = Settings.Properties.Position
+	Frame.BackgroundColor3 = Settings.Properties.BackGroundeColor
+	Frame.BackgroundTransparency = Settings.Properties.BackGroundeTransparency
+
+	Frame.Text = Settings.Text.Text
+	Frame.TextColor3 = Settings.Text.TextColor
+	Frame.TextScaled = Settings.Text.TextScaled
+	Frame.RichText = Settings.Text.RichText
+	Frame.Font = Settings.Text.Fonts
+	Frame.TextTransparency = Settings.Text.TextTransparency
+
+	if Settings.Modules.Corner then
+		local Corner = Instance.new("UICorner",Frame)
+		Corner.CornerRadius = Settings.Modules.Corner.Radius
+	end
+
+	if Settings.Modules.TextSizeConst then
+		local tsc = Instance.new("UITextSizeConstraint",Frame)
+		tsc.MinTextSize = Settings.Modules.TextSizeConst.MinSize
+		tsc.MaxTextSize = Settings.Modules.TextSizeConst.MaxSize
+	end
+
+	if Settings.Modules.Gradient then
+		local Gradient = Instance.new("UIGradient",Frame)
+		Gradient.Color = Settings.Modules.Gradient.Color
+
+		local Animation = Instance.new("StringValue",Gradient)
+		Animation.Name = "Animation"
+
+		if Settings.Modules.Gradient.Animation then
+			if Settings.Modules.Gradient.Animation.Rainbow then
+				Animation.Changed:Connect(function(value)
+					if value == "Rainbow" then
+						rainbow(Gradient)
+					end
+				end)
+				Animation.Value = "Rainbow"
+			end
+		end
+	end
+	return Frame
+end
+function lib:CreateTextBox(Settings)
+	local Frame = Instance.new("TextBox",Settings.Properties.Parent)
+	Frame.Size = Settings.Properties.Size
+	Frame.Position = Settings.Properties.Position
+	Frame.BackgroundColor3 = Settings.Properties.BackGroundeColor
+	Frame.BackgroundTransparency = Settings.Properties.BackGroundeTransparency
+	
+	Frame.PlaceholderText = Settings.Text.PlaceHolder
+	Frame.Text = Settings.Text.Text
+	Frame.TextColor3 = Settings.Text.TextColor
+	Frame.TextScaled = Settings.Text.TextScaled
+	Frame.RichText = Settings.Text.RichText
+	Frame.Font = Settings.Text.Fonts
+	Frame.TextTransparency = Settings.Text.TextTransparency
+	Frame.MultiLine = true
+
+	if Settings.Modules.Corner then
+		local Corner = Instance.new("UICorner",Frame)
+		Corner.CornerRadius = Settings.Modules.Corner.Radius
+	end
+
+	if Settings.Modules.TextSizeConst then
+		local tsc = Instance.new("UITextSizeConstraint",Frame)
+		tsc.MinTextSize = Settings.Modules.TextSizeConst.MinSize
+		tsc.MaxTextSize = Settings.Modules.TextSizeConst.MaxSize
+	end
+
+	if Settings.Modules.Gradient then
+		local Gradient = Instance.new("UIGradient",Frame)
+		Gradient.Color = Settings.Modules.Gradient.Color
+
+		local Animation = Instance.new("StringValue",Gradient)
+		Animation.Name = "Animation"
+
+		if Settings.Modules.Gradient.Animation then
+			if Settings.Modules.Gradient.Animation.Rainbow then
+				Animation.Changed:Connect(function(value)
+					if value == "Rainbow" then
+						rainbow(Gradient)
+					end
+				end)
+				Animation.Value = "Rainbow"
+			end
+		end
+	end
+	return Frame
+end
+function lib:CreateScrolling(Settings)
+	local Frame = Instance.new("ScrollingFrame",Settings.Properties.Parent)
+	Frame.Size = Settings.Properties.Size
+	Frame.Position = Settings.Properties.Position
+	Frame.BackgroundColor3 = Settings.Properties.BackGroundeColor
+	Frame.BackgroundTransparency = Settings.Properties.BackGroundeTransparency
+	Frame.BorderSizePixel = Settings.Properties.BorderSize
+	
+	Frame.ScrollBarThickness = Settings.Scrolling.Thickness
+	Frame.TopImage = Settings.Scrolling.TopImage
+	Frame.MidImage = Settings.Scrolling.MidImage
+	Frame.BottomImage = Settings.Scrolling.BottomImage
+	Frame.ScrollBarImageColor3 = Settings.Scrolling.Color
+	Frame.CanvasSize = Settings.Scrolling.CanvasSize
+	Frame.ScrollingDirection = Settings.Scrolling.ScrollingDerection
+
+	if Settings.Modules.Corner then
+		local Corner = Instance.new("UICorner",Frame)
+		Corner.CornerRadius = Settings.Modules.Corner.Radius
+	end
+
+	if Settings.Modules.Gradient then
+		local Gradient = Instance.new("UIGradient",Frame)
+		Gradient.Color = Settings.Modules.Gradient.Color
+
+		local Animation = Instance.new("StringValue",Gradient)
+		Animation.Name = "Animation"
+
+		if Settings.Modules.Gradient.Animation then
+			if Settings.Modules.Gradient.Animation.Rainbow then
+				Animation.Changed:Connect(function(value)
+					if value == "Rainbow" then
+						rainbow(Gradient)
+					end
+				end)
+				Animation.Value = "Rainbow"
+			end
+		end
+	end
+	return Frame
+end
+
+return lib
