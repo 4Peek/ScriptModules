@@ -1,0 +1,78 @@
+local workspace = game:GetService("Workspace")
+
+local models = {
+	["players"] = {},
+	["ores"] = {
+		["Iron"] = {},
+		["Nitrat"] = {},
+		["Stone"] = {},
+	},
+	["crate"] = {
+		["PartsBox"] = {},
+		["MetalCrate"] = {},
+		["TransportCrate"] = {},
+	},
+	["buildings"] = {},
+	["lootbox"] = {}
+}
+
+local oresindef = {
+	["Iron"] = {["Color"] = Color3.fromRGB(199, 172, 120),["Material"] = Enum.Material.Slate},
+	["Nitrat"] = {["Color"] = Color3.fromRGB(248, 248, 248),["Material"] = Enum.Material.Slate},
+	["Stone"] = {["Color"] = Color3.fromRGB(105, 102, 92),["Material"] = Enum.Material.Limestone},
+}
+local cratesindef = {
+	["PartsBox"] = {["Color"] = Color3.fromRGB(211, 190, 150),["Material"] = Enum.Material.Plastic},
+	["MetalCrate"] = {["Color"] = Color3.fromRGB(134, 133, 136),["Material"] = Enum.Material.Metal,["Mesh"] = 13856404606},
+	["TransportCrate"] = {["Color"] = Color3.fromRGB( 124, 156, 107),["Material"] = Enum.Material.Metal,["Mesh"] = 13422670068},
+}
+
+function checkchld(chld)
+	if chld:FindFirstChild("HumanoidRootPart") then
+		table.insert(models["players"],chld)
+	elseif chld:FindFirstChild("Part") then
+		for v,i in pairs(chld:GetChildren()) do
+			if i.Name == "Part" then
+				local part = i
+				if part.Color == oresindef.Iron.Color and part.Material == oresindef.Iron.Material then
+					table.insert(models.ores.Iron,chld)
+				elseif part.Color == oresindef.Nitrat.Color and part.Material == oresindef.Nitrat.Material then
+					table.insert(models.ores.Nitrat,chld)
+				elseif part.Color == oresindef.Stone.Color and part.Material == oresindef.Stone.Material then
+					table.insert(models.ores.Stone,chld)
+				elseif part.Color == cratesindef.PartsBox.Color and part.Material == cratesindef.PartsBox.Material then
+					table.insert(models.crate.PartsBox,chld)
+				end
+			end
+		end
+	elseif chld:FindFirstChild("Body") then
+		local part = chld.Body
+		if part.Color == cratesindef.MetalCrate.Color and part.Material == cratesindef.MetalCrate.Material and part.MeshId == "rbxassetid://"..cratesindef.MetalCrate.Mesh then
+			table.insert(models.crate.MetalCrate,chld)
+		end
+	elseif chld:FindFirstChild("Top") then
+		local part = chld.Top
+		if part.Color == cratesindef.TransportCrate.Color and part.Material == cratesindef.TransportCrate.Material and part.MeshId == "rbxassetid://"..cratesindef.TransportCrate.Mesh then
+			table.insert(models.crate.TransportCrate,chld)
+		end
+	end
+end
+
+while wait(0.5) do
+	models.players = {}
+	models.ores.Nitrat = {}
+	models.ores.Iron = {}
+	models.ores.Stone = {}
+	models.crate.PartsBox = {}
+	models.crate.MetalCrate = {}
+	models.crate.TransportCrate = {}
+	for index, value in ipairs(workspace:GetChildren()) do
+		checkchld(value)
+	end
+end
+
+local api = {}
+function api:GetTable()
+	return models
+end
+return api
